@@ -1,0 +1,71 @@
+package com.mycompany.lab01.first;
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+
+/**
+ *
+ * @author s0205566
+ */
+ public class Book {
+    private Long id;
+    private String title;
+    private String author;
+    private Integer year;
+    
+
+    //  id
+    public Long getId () {
+        return id;
+    }
+
+    // Setter с валидацией
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
+    //  title
+    public String getTitle() {
+        return title;
+    }
+
+    // Setter с валидацией
+    public void setTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Название не может быть пустым");
+        }
+        this.title = title;
+    }
+    
+    //author
+     public String getAuthor() {
+        return author;
+    }
+
+    // Setter с валидацией
+    public void setAuthor(String author) {
+        if (author == null || author.isBlank()) {
+            throw new IllegalArgumentException("Автор не может быть пустым");
+        }
+        this.author = author;
+    }
+    
+     //year
+     public Integer getYear() {
+        return year;
+    }
+
+    // Setter с валидацией
+    public void setYear(Integer year) {
+        if ( 0 <= year && year <= 2026) {
+            throw new IllegalArgumentException("год должен быть в диапазоне от 0 до 2026");
+        }
+        this.year = year;
+    }
+    public String getDescription() {
+        return  "\"" + title + "\" — " + author + " (" + year + ")";
+    }
+    
+}
