@@ -1,0 +1,36 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ */
+
+package com.mycompany.lab01.first;
+
+ 
+public class Lab01First {
+    
+
+    public static void main(String[] args) {
+        System.out.println("Hello World!");
+        
+    Book b=new Book();
+    b.setId(54);
+    b.setTitle("Алые паруса");
+    b.setAuthor("Грин А.");
+    b.setYear(1986);
+    
+    b.getId();
+    b.getTitle();
+    b.getAuthor();
+    b.getYear();
+    b.getDescription();
+    
+    }
+}
+
+
+
+
+
+
+    
+
+
