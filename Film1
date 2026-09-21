@@ -1,0 +1,217 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package javaapplication1;
+
+import java.time.Year;
+
+/**
+ * Класс, описывающий фильм.
+ * Демонстрирует инкапсуляцию, перегрузку конструкторов и методов,
+ * использование статических членов класса и фабричных методов.
+ */
+public class Film {
+
+    /** Статический счётчик созданных фильмов. */
+    private static int filmCounter = 0;
+
+    private long id;
+    private String title;
+    private String director;
+    private int year;
+    private double rating;
+
+    /**
+     * Конструктор по умолчанию.
+     * Делегирует основному конструктору значения по умолчанию.
+     */
+    public Film() {
+        this(0, "Без названия", "Неизвестен", 0, 0.0);
+    }
+
+    /**
+     * Конструктор без id (id присваивается автоматически).
+     *
+     * @param title    название фильма
+     * @param director режиссёр
+     * @param year     год выпуска
+     * @param rating   рейтинг
+     */
+    public Film(String title, String director, int year, double rating) {
+        this(0, title, director, year, rating);
+    }
+
+    /**
+     * Конструктор только с названием и режиссёром.
+     *
+     * @param title    название фильма
+     * @param director режиссёр
+     */
+    public Film(String title, String director) {
+        this(0, title, director, 0, 0.0);
+    }
+
+    /**
+     * Основной конструктор с полным набором параметров.
+     * Если id равен 0 — присваивается автоинкрементный id из счётчика.
+     *
+     * @param id       идентификатор (0 — авто)
+     * @param title    название фильма
+     * @param director режиссёр
+     * @param year     год выпуска
+     * @param rating   рейтинг
+     */
+    public Film(long id, String title, String director, int year, double rating) {
+        if (id == 0) {
+            this.id = ++filmCounter;
+        } else {
+            setId(id);
+            filmCounter++;
+        }
+        setTitle(title);
+        setDirector(director);
+        setYear(year);
+        setRating(rating);
+    }
+
+    // ---------- статические методы ----------
+
+    /**
+     * Возвращает количество созданных фильмов.
+     *
+     * @return количество созданных объектов Film
+     */
+    public static int getCounter() {
+        return filmCounter;
+    }
+
+    /**
+     * Статический фабричный метод для создания фильма.
+     * Автоматически присваивает id через счётчик.
+     *
+     * @param title    название фильма
+     * @param director режиссёр
+     * @param year     год выпуска
+     * @param rating   рейтинг
+     * @return новый объект Film
+     */
+    public static Film createFilm(String title, String director, int year, double rating) {
+        return new Film(title, director, year, rating);
+    }
+
+    // ---------- getters ----------
+
+    public long getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDirector() {
+        return director;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    // ---------- setters с валидацией ----------
+
+    public void setId(long id) {
+        if (id < 0) {
+            throw new IllegalArgumentException("id не может быть отрицательным: " + id);
+        }
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Название фильма не может быть пустым");
+        }
+        this.title = title;
+    }
+
+    public void setDirector(String director) {
+        if (director == null || director.isBlank()) {
+            throw new IllegalArgumentException("Имя режиссёра не может быть пустым");
+        }
+        this.director = director;
+    }
+
+    public void setYear(int year) {
+        int currentYear = Year.now().getValue();
+        if (year < 1895 || year > currentYear) {
+            throw new IllegalArgumentException(
+                    "Год должен быть в диапазоне 1895.." + currentYear + ", получено: " + year);
+        }
+        this.year = year;
+    }
+
+    public void setRating(double rating) {
+        if (rating < 0.0 || rating > 10.0) {
+            throw new IllegalArgumentException(
+                    "Рейтинг должен быть в диапазоне 0.0..10.0, получено: " + rating);
+        }
+        this.rating = rating;
+    }
+
+    // ---------- бизнес-логика ----------
+
+    /**
+     * Возвращает строковое описание фильма в формате:
+     * "Название" (реж. Режиссёр, год) — рейтинг X.Y
+     *
+     * @return полное описание фильма
+     */
+    public String getDescription() {
+        return "\"" + title + "\" (реж. " + director + ", " + year + ") — рейтинг " + rating;
+    }
+
+    /**
+     * Перегруженный метод описания фильма.
+     *
+     * @param withRating если true — добавляет рейтинг в описание
+     * @return описание фильма
+     */
+    public String getDescription(boolean withRating) {
+        if (withRating) {
+            return getDescription();
+        }
+        return "\"" + title + "\" (реж. " + director + ", " + year + ")";
+    }
+
+    /**
+     * Перегруженный метод: возвращает возраст фильма на текущий год.
+     *
+     * @return возраст фильма в годах
+     */
+    public int getAge() {
+        return Year.now().getValue() - year;
+    }
+
+    /**
+     * Перегруженный метод: возвращает возраст фильма на указанный год.
+     *
+     * @param atYear год, на который вычисляется возраст
+     * @return возраст фильма в годах
+     */
+    public int getAge(int atYear) {
+        if (atYear < year) {
+            throw new IllegalArgumentException(
+                    "Указанный год (" + atYear + ") раньше года выпуска фильма (" + year + ")");
+        }
+        return atYear - year;
+    }
+
+    @Override
+    public String toString() {
+        return getDescription();
+    }
+}
