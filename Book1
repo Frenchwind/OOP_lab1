@@ -1,0 +1,177 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package lab1;
+
+import java.time.Year;
+
+/**
+ * Класс, описывающий книгу.
+ * Демонстрирует инкапсуляцию, перегрузку конструкторов и методов,
+ * использование статических членов класса и фабричных методов.
+ */
+public class Book {
+
+    /** Статический счётчик созданных книг. */
+    private static int counter = 0;
+
+    private long id;
+    private String title;
+    private String author;
+    private int year;
+
+    /**
+     * Конструктор по умолчанию.
+     * Делегирует основному конструктору значения по умолчанию.
+     */
+    public Book() {
+        this(0, "Без названия", "Неизвестен", 0);
+    }
+
+    /**
+     * Конструктор без id (id присваивается автоматически).
+     *
+     * @param title  название книги
+     * @param author автор книги
+     * @param year   год издания
+     */
+    public Book(String title, String author, int year) {
+        this(0, title, author, year);
+    }
+
+    /**
+     * Конструктор только с названием и автором.
+     *
+     * @param title  название книги
+     * @param author автор книги
+     */
+    public Book(String title, String author) {
+        this(0, title, author, 0);
+    }
+
+    /**
+     * Основной конструктор с полным набором параметров.
+     * Если id равен 0 — присваивается автоинкрементный id из счётчика.
+     *
+     * @param id     идентификатор (0 — авто)
+     * @param title  название книги
+     * @param author автор книги
+     * @param year   год издания
+     */
+    public Book(long id, String title, String author, int year) {
+        if (id == 0) {
+            this.id = ++counter;
+        } else {
+            setId(id);
+            counter++;
+        }
+        setTitle(title);
+        setAuthor(author);
+        setYear(year);
+    }
+
+    // ---------- статические методы ----------
+
+    /**
+     * Возвращает количество созданных книг.
+     *
+     * @return количество созданных объектов Book
+     */
+    public static int getCounter() {
+        return counter;
+    }
+
+    /**
+     * Статический фабричный метод для создания книги.
+     * Автоматически присваивает id через счётчик.
+     *
+     * @param title  название книги
+     * @param author автор книги
+     * @param year   год издания
+     * @return новый объект Book
+     */
+    public static Book createBook(String title, String author, int year) {
+        return new Book(title, author, year);
+    }
+
+    // ---------- getters ----------
+
+    public long getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    // ---------- setters с валидацией ----------
+
+    public void setId(long id) {
+        if (id < 0) {
+            throw new IllegalArgumentException("id не может быть отрицательным: " + id);
+        }
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Название книги не может быть пустым");
+        }
+        this.title = title;
+    }
+
+    public void setAuthor(String author) {
+        if (author == null || author.isBlank()) {
+            throw new IllegalArgumentException("Имя автора не может быть пустым");
+        }
+        this.author = author;
+    }
+
+    public void setYear(int year) {
+        int currentYear = Year.now().getValue();
+        if (year < 0 || year > currentYear) {
+            throw new IllegalArgumentException(
+                    "Год должен быть в диапазоне 0.." + currentYear + ", получено: " + year);
+        }
+        this.year = year;
+    }
+
+    // ---------- бизнес-логика ----------
+
+    /**
+     * Возвращает строковое описание книги в формате:
+     * "Название" — Автор (год)
+     *
+     * @return полное описание книги
+     */
+    public String getDescription() {
+        return "\"" + title + "\" — " + author + " (" + year + ")";
+    }
+
+    /**
+     * Перегруженный метод описания книги.
+     *
+     * @param shortFormat если true — краткое описание "Название (год)"
+     * @return описание книги в выбранном формате
+     */
+    public String getDescription(boolean shortFormat) {
+        if (shortFormat) {
+            return title + " (" + year + ")";
+        }
+        return getDescription();
+    }
+
+    @Override
+    public String toString() {
+        return getDescription();
+    }
+}
