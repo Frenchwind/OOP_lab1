@@ -1,0 +1,296 @@
+import java.util.Locale;
+
+/**
+ * Интерфейс «способен предоставить отчёт».
+ */
+interface Reportable {
+    /**
+     * Генерирует отчёт.
+     *
+     * @return текст отчёта
+     */
+    String generateReport();
+}
+
+/**
+ * Базовый класс иерархии «Фильмы».
+ *
+ * @author Student
+ * @version 1.0
+ */
+public class Film3 {
+
+    /** Статический счётчик созданных объектов. */
+    private static int counter = 0;
+
+    /** Уникальный идентификатор. */
+    private long id;
+
+    /** Название. */
+    private String title;
+
+    /** Режиссёр. */
+    private String director;
+
+    /** Год выпуска. */
+    private int year;
+
+    /** Бюджет. */
+    private double budget;
+
+    /** Конструктор по умолчанию. */
+    public Film3() {
+        this(0, "Без названия", "Неизвестен", 0, 0.0);
+    }
+
+    /**
+     * @param title    название
+     * @param director режиссёр
+     * @param year     год
+     * @param budget   бюджет
+     */
+    public Film3(String title, String director, int year, double budget) {
+        this(0, title, director, year, budget);
+    }
+
+    /**
+     * @param title    название
+     * @param director режиссёр
+     */
+    public Film3(String title, String director) {
+        this(0, title, director, 0, 0.0);
+    }
+
+    /**
+     * @param id       идентификатор
+     * @param title    название
+     * @param director режиссёр
+     * @param year     год
+     * @param budget   бюджет
+     */
+    public Film3(long id, String title, String director, int year, double budget) {
+        if (id == 0) {
+            this.id = ++counter;
+        } else {
+            this.id = id;
+            counter++;
+        }
+        setTitle(title);
+        setDirector(director);
+        setYear(year);
+        setBudget(budget);
+    }
+
+    /**
+     * Фабричный метод.
+     *
+     * @param title    название
+     * @param director режиссёр
+     * @param year     год
+     * @param budget   бюджет
+     * @return новый объект
+     */
+    public static Film3 createFilm(String title, String director, int year, double budget) {
+        return new Film3(title, director, year, budget);
+    }
+
+    /** @return счётчик */
+    public static int getCounter() { return counter; }
+
+    /** @return id */
+    public long getId() { return id; }
+
+    /** @return название */
+    public String getTitle() { return title; }
+
+    /**
+     * @param title название
+     */
+    public void setTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Название не может быть пустым");
+        }
+        this.title = title;
+    }
+
+    /** @return режиссёр */
+    public String getDirector() { return director; }
+
+    /**
+     * @param director режиссёр
+     */
+    public void setDirector(String director) {
+        if (director == null || director.isBlank()) {
+            throw new IllegalArgumentException("Режиссёр не может быть пустым");
+        }
+        this.director = director;
+    }
+
+    /** @return год */
+    public int getYear() { return year; }
+
+    /**
+     * @param year год
+     */
+    public void setYear(int year) {
+        if (year < 0 || year > 2100) {
+            throw new IllegalArgumentException("Некорректный год");
+        }
+        this.year = year;
+    }
+
+    /** @return бюджет */
+    public double getBudget() { return budget; }
+
+    /**
+     * @param budget бюджет
+     */
+    public void setBudget(double budget) {
+        if (budget < 0) {
+            throw new IllegalArgumentException("Бюджет не может быть отрицательным");
+        }
+        this.budget = budget;
+    }
+
+    /**
+     * Базовая наценка — 5%.
+     *
+     * @return наценка
+     */
+    public double calculateBonus() {
+        return budget * 0.05;
+    }
+
+    /**
+     * Полное описание.
+     *
+     * @return описание
+     */
+    public String getDescription() {
+        return String.format(Locale.US,
+                "Фильм #%d: \"%s\" — режиссёр %s (%d), бюджет %.2f",
+                id, title, director, year, budget);
+    }
+
+    /**
+     * Перегруженное описание.
+     *
+     * @param shortFormat краткое, если {@code true}
+     * @return описание
+     */
+    public String getDescription(boolean shortFormat) {
+        if (shortFormat) {
+            return String.format("\"%s\" (%d)", title, year);
+        }
+        return getDescription();
+    }
+
+    @Override
+    public String toString() {
+        return getDescription();
+    }
+}
+
+/**
+ * Художественный фильм — бонус 15% + поле {@code genre}.
+ */
+class FeatureFilm extends Film3 implements Reportable {
+
+    /** Жанр. */
+    private String genre;
+
+    /**
+     * @param title    название
+     * @param director режиссёр
+     * @param year     год
+     * @param budget   бюджет
+     * @param genre    жанр
+     */
+    public FeatureFilm(String title, String director, int year, double budget, String genre) {
+        super(title, director, year, budget);
+        this.genre = genre;
+    }
+
+    /** @return жанр */
+    public String getGenre() { return genre; }
+
+    /**
+     * @param genre жанр
+     */
+    public void setGenre(String genre) { this.genre = genre; }
+
+    @Override
+    public double calculateBonus() {
+        return getBudget() * 0.15;
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + " — художественный, жанр: " + genre;
+    }
+
+    @Override
+    public String generateReport() {
+        return "Отчёт художественного фильма \"" + getTitle() + "\": жанр " + genre
+                + ", собрано " + String.format(Locale.US, "%.2f", calculateBonus());
+    }
+}
+
+/**
+ * Документальный фильм — бонус 10% + techBonus, поле {@code topic}.
+ */
+class Documentary extends Film3 implements Reportable {
+
+    /** Тема. */
+    private String topic;
+
+    /** Дополнительная надбавка за исследования. */
+    private double researchBonus;
+
+    /**
+     * @param title          название
+     * @param director       режиссёр
+     * @param year           год
+     * @param budget         бюджет
+     * @param topic          тема
+     * @param researchBonus  надбавка
+     */
+    public Documentary(String title, String director, int year, double budget,
+                       String topic, double researchBonus) {
+        super(title, director, year, budget);
+        this.topic = topic;
+        this.researchBonus = researchBonus;
+    }
+
+    /** @return тема */
+    public String getTopic() { return topic; }
+
+    /**
+     * @param topic тема
+     */
+    public void setTopic(String topic) { this.topic = topic; }
+
+    /** @return надбавка */
+    public double getResearchBonus() { return researchBonus; }
+
+    /**
+     * @param researchBonus надбавка
+     */
+    public void setResearchBonus(double researchBonus) { this.researchBonus = researchBonus; }
+
+    @Override
+    public double calculateBonus() {
+        return getBudget() * 0.10 + researchBonus;
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + " — документальный, тема: " + topic;
+    }
+
+    @Override
+    public String generateReport() {
+        return "Отчёт документального фильма \"" + getTitle() + "\": тема " + topic
+                + ", собрано " + String.format(Locale.US, "%.2f", calculateBonus());
+    }
+}
