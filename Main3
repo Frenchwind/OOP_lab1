@@ -1,0 +1,51 @@
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Демонстрация наследования, полиморфизма и интерфейсов
+ * для иерархии «Фильмы» (вариант 8).
+ */
+public class Main3 {
+
+    /**
+     * Точка входа.
+     *
+     * @param args аргументы командной строки
+     */
+    public static void main(String[] args) {
+        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+
+        System.out.println("=== Полиморфизм ===");
+
+        Film3[] films = {
+                new FeatureFilm("Иван Васильевич меняет профессию", "Гайдай Л.И.", 1973, 1_000_000, "комедия"),
+                new Documentary("Планета Земля", "Фосетт А.", 2006, 2_000_000, "природа", 150_000),
+                new FeatureFilm("Мастер и Маргарита", "Бортко В.В.", 2005, 5_000_000, "драма"),
+                new Documentary("Дом", "Артюс-Бертран Я.", 2009, 3_000_000, "экология", 200_000),
+                new FeatureFilm("Преступление и наказание", "Достоевский Ф.М.", 1866, 800_000, "драма")
+        };
+
+        for (Film3 f : films) {
+            System.out.printf("%s — бонус: %.2f руб.%n", f.getDescription(true), f.calculateBonus());
+        }
+
+        System.out.println();
+        System.out.println("=== Интерфейс Reportable ===");
+
+        List<Reportable> reporters = new ArrayList<>();
+        for (Film3 f : films) {
+            if (f instanceof Reportable r) {
+                reporters.add(r);
+            }
+        }
+        for (Reportable r : reporters) {
+            System.out.println(r.generateReport());
+        }
+
+        System.out.println();
+        System.out.println("=== Статистика ===");
+        System.out.println("Всего создано фильмов: " + Film3.getCounter());
+    }
+}
