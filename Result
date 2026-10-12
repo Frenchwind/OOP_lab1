@@ -1,0 +1,223 @@
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+/**
+ * Обобщённый контейнер, представляющий результат операции.
+ * <p>
+ * Объект {@code Result<T, E>} находится в одном из двух состояний:
+ * <ul>
+ *     <li>{@code success} — операция завершилась успешно, хранится значение типа {@code T};</li>
+ *     <li>{@code error}   — операция завершилась ошибкой, хранится значение типа {@code E}.</li>
+ * </ul>
+ *
+ * <p>Класс демонстрирует:
+ * <ul>
+ *     <li>обобщённые типы (generics) с двумя параметрами;</li>
+ *     <li>ограничитель типа {@code E extends Throwable} в фабричном методе {@link #failure(Throwable)};</li>
+ *     <li>обобщённые методы {@code map}, {@code flatMap}, {@code orElse};</li>
+ *     <li>шаблон «Result» (аналог {@code Either} в функциональных языках).</li>
+ * </ul>
+ *
+ * @param <T> тип успешного значения
+ * @param <E> тип ошибки
+ *
+ * @author Student
+ * @version 1.0
+ */
+public final class Result<T, E> {
+
+    /** Признак успеха. */
+    private final boolean success;
+
+    /** Значение при успехе (иначе {@code null}). */
+    private final T value;
+
+    /** Значение при ошибке (иначе {@code null}). */
+    private final E error;
+
+    /**
+     * Приватный конструктор — создавать объекты только через фабрики.
+     *
+     * @param success признак успеха
+     * @param value   успешное значение
+     * @param error   значение ошибки
+     */
+    private Result(boolean success, T value, E error) {
+        this.success = success;
+        this.value = value;
+        this.error = error;
+    }
+
+    /**
+     * Создаёт успешный результат.
+     *
+     * @param value значение
+     * @param <T>   тип значения
+     * @param <E>   тип ошибки (не используется)
+     * @return успешный {@code Result}
+     */
+    public static <T, E> Result<T, E> success(T value) {
+        return new Result<>(true, value, null);
+    }
+
+    /**
+     * Создаёт результат-ошибку.
+     *
+     * @param error значение ошибки
+     * @param <T>   тип значения (не используется)
+     * @param <E>   тип ошибки
+     * @return ошибочный {@code Result}
+     */
+    public static <T, E> Result<T, E> failure(E error) {
+        return new Result<>(false, null, error);
+    }
+
+    /**
+     * Создаёт результат-ошибку из исключения.
+     * Демонстрирует ограничитель типа {@code E extends Throwable}.
+     *
+     * @param throwable исключение
+     * @param <T>       тип значения
+     * @param <E>       тип ошибки, наследник {@link Throwable}
+     * @return ошибочный {@code Result}
+     */
+    public static <T, E extends Throwable> Result<T, E> failure(E throwable) {
+        return new Result<>(false, null, throwable);
+    }
+
+    /** @return {@code true}, если операция успешна */
+    public boolean isSuccess() { return success; }
+
+    /** @return {@code true}, если операция завершилась ошибкой */
+    public boolean isFailure() { return !success; }
+
+    /**
+     * Возвращает значение при успехе.
+     *
+     * @return значение
+     * @throws IllegalStateException если результат ошибочный
+     */
+    public T getValue() {
+        if (!success) {
+            throw new IllegalStateException("Результат содержит ошибку: " + error);
+        }
+        return value;
+    }
+
+    /**
+     * Возвращает значение ошибки.
+     *
+     * @return ошибка
+     * @throws IllegalStateException если результат успешный
+     */
+    public E getError() {
+        if (success) {
+            throw new IllegalStateException("Результат успешен, ошибки нет");
+        }
+        return error;
+    }
+
+    /**
+     * Возвращает значение при успехе или {@code defaultValue} при ошибке.
+     *
+     * @param defaultValue значение по умолчанию
+     * @return значение или значение по умолчанию
+     */
+    public T orElse(T defaultValue) {
+        return success ? value : defaultValue;
+    }
+
+    /**
+     * Преобразует успешное значение с помощью функции.
+     * Если результат ошибочный — возвращает ошибку без изменений.
+     *
+     * @param mapper функция преобразования
+     * @param <U>    новый тип значения
+     * @return новый {@code Result}
+     */
+    public <U> Result<U, E> map(Function<? super T, ? extends U> mapper) {
+        Objects.requireNonNull(mapper, "mapper не может быть null");
+        if (!success) {
+            return Result.failure(error);
+        }
+        return Result.success(mapper.apply(value));
+    }
+
+    /**
+     * Преобразует успешное значение в новый {@code Result} (без вложенности).
+     *
+     * @param mapper функция, возвращающая новый {@code Result}
+     * @param <U>    новый тип значения
+     * @return новый {@code Result}
+     */
+    public <U> Result<U, E> flatMap(Function<? super T, ? extends Result<U, E>> mapper) {
+        Objects.requireNonNull(mapper, "mapper не может быть null");
+        if (!success) {
+            return Result.failure(error);
+        }
+        return mapper.apply(value);
+    }
+
+    /**
+     * Выполняет действие над успешным значением (если оно есть).
+     *
+     * @param action действие
+     * @return текущий {@code Result} для цепочки вызовов
+     */
+    public Result<T, E> onSuccess(Consumer<? super T> action) {
+        if (success) {
+            action.accept(value);
+        }
+        return this;
+    }
+
+    /**
+     * Выполняет действие над ошибкой (если она есть).
+     *
+     * @param action действие
+     * @return текущий {@code Result} для цепочки вызовов
+     */
+    public Result<T, E> onFailure(Consumer<? super E> action) {
+        if (!success) {
+            action.accept(error);
+        }
+        return this;
+    }
+
+    /**
+     * Преобразует результат в значение по правилу:
+     * {@code success ? mapper(value) : errorMapper(error)}.
+     *
+     * @param successMapper преобразование успеха
+     * @param errorMapper   преобразование ошибки
+     * @param <R>           итоговый тип
+     * @return результат преобразования
+     */
+    public <R> R fold(Function<? super T, ? extends R> successMapper,
+                      Function<? super E, ? extends R> errorMapper) {
+        return success ? successMapper.apply(value) : errorMapper.apply(error);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Result<?, ?> result = (Result<?, ?>) o;
+        return success == result.success
+                && Objects.equals(value, result.value)
+                && Objects.equals(error, result.error);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(success, value, error);
+    }
+
+    @Override
+    public String toString() {
+        return success
+                ? "Result.success(" + value + ")"
+                : "Result.failure(" + error + ")";
+    }
+}
