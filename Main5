@@ -1,0 +1,113 @@
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Демонстрация работы обобщённого класса {@link Result}.
+ * <p>
+ * Показаны: создание успеха и ошибки, {@code map}, {@code flatMap},
+ * {@code orElse}, {@code onSuccess}/{@code onFailure}, {@code fold},
+ * а также ограничитель типа {@code E extends Throwable}.
+ */
+public class Main5 {
+
+    /**
+     * Точка входа.
+     *
+     * @param args аргументы командной строки
+     */
+    public static void main(String[] args) {
+        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+
+        System.out.println("=== 1. Успешный результат ===");
+        Result<Integer, String> ok = Result.success(42);
+        System.out.println(ok);
+        System.out.println("isSuccess: " + ok.isSuccess());
+        System.out.println("value: " + ok.getValue());
+        System.out.println("orElse(0): " + ok.orElse(0));
+
+        System.out.println();
+        System.out.println("=== 2. Ошибочный результат ===");
+        Result<Integer, String> err = Result.failure("Деление на ноль");
+        System.out.println(err);
+        System.out.println("isFailure: " + err.isFailure());
+        System.out.println("error: " + err.getError());
+        System.out.println("orElse(0): " + err.orElse(0));
+
+        System.out.println();
+        System.out.println("=== 3. map: преобразование успешного значения ===");
+        Result<Integer, String> doubled = ok.map(x -> x * 2);
+        System.out.println("ok.map(x -> x * 2) = " + doubled);
+        System.out.println("err.map(x -> x * 2) = " + err.map(x -> x * 2));
+
+        System.out.println();
+        System.out.println("=== 4. flatMap: цепочка операций ===");
+        Result<Integer, String> chained = ok
+                .flatMap(x -> Result.success(x + 10))
+                .flatMap(x -> x > 50
+                        ? Result.failure("Слишком большое число: " + x)
+                        : Result.success(x));
+        System.out.println("цепочка от ok: " + chained);
+
+        System.out.println();
+        System.out.println("=== 5. onSuccess / onFailure ===");
+        ok.onSuccess(v -> System.out.println("  Успех! Значение = " + v))
+          .onFailure(e -> System.out.println("  Ошибка: " + e));
+        err.onSuccess(v -> System.out.println("  Успех! Значение = " + v))
+           .onFailure(e -> System.out.println("  Ошибка: " + e));
+
+        System.out.println();
+        System.out.println("=== 6. fold: свернуть результат в одно значение ===");
+        String okText = ok.fold(
+                v -> "Успех: " + v,
+                e -> "Ошибка: " + e);
+        String errText = err.fold(
+                v -> "Успех: " + v,
+                e -> "Ошибка: " + e);
+        System.out.println(okText);
+        System.out.println(errText);
+
+        System.out.println();
+        System.out.println("=== 7. Ограничитель типа E extends Throwable ===");
+        Result<Integer, Exception> ex = Result.failure(new IllegalArgumentException("Некорректный аргумент"));
+        System.out.println(ex);
+        System.out.println("Класс ошибки: " + ex.getError().getClass().getSimpleName());
+
+        System.out.println();
+        System.out.println("=== 8. Пример: безопасное деление ===");
+        System.out.println(divide(10, 2));
+        System.out.println(divide(10, 0));
+
+        System.out.println();
+        System.out.println("=== 9. Пример: парсинг числа ===");
+        System.out.println(parseInt("123"));
+        System.out.println(parseInt("abc"));
+    }
+
+    /**
+     * Безопасное деление, возвращающее {@link Result}.
+     *
+     * @param a делимое
+     * @param b делитель
+     * @return результат деления или ошибка
+     */
+    private static Result<Double, String> divide(double a, double b) {
+        if (b == 0) {
+            return Result.failure("Деление на ноль");
+        }
+        return Result.success(a / b);
+    }
+
+    /**
+     * Безопасный парсинг целого числа.
+     *
+     * @param s строка
+     * @return результат парсинга или ошибка
+     */
+    private static Result<Integer, String> parseInt(String s) {
+        try {
+            return Result.success(Integer.parseInt(s));
+        } catch (NumberFormatException ex) {
+            return Result.failure("Не число: " + s);
+        }
+    }
+}
